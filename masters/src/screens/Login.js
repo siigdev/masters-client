@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import { Button, Block, Text, Input } from '../components';
-import { Keyboard, AsyncStorage, KeyboardAvoidingView, ActivityIndicator, StyleSheet } from 'react-native';
+import { Keyboard, AsyncStorage, KeyboardAvoidingView, ActivityIndicator, StyleSheet, SafeAreaView, TouchableWithoutFeedback } from 'react-native';
 import { theme } from '../constants';
 import firebase from 'firebase';
 
@@ -41,7 +41,12 @@ export default class Login extends Component {
         const { navigation } = this.props;
         const { isLoading } = this.state;
         return (
-            <KeyboardAvoidingView style={styles.login} behavior="padding">
+            <KeyboardAvoidingView
+            behavior={Platform.OS === "ios" ? "padding" : null}
+            style={{ flex: 1 }}
+        >
+            <SafeAreaView style={styles.container}>
+                <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
                 <Block animation="zoomIn" duration={400} padding={[0, theme.sizes.base * 2]}>
 
                     {isLoading ?
@@ -72,6 +77,8 @@ export default class Login extends Component {
                         </Block>
                     }
                 </Block>
+                </TouchableWithoutFeedback>
+                </SafeAreaView>
             </KeyboardAvoidingView>
         )
     }
@@ -80,6 +87,14 @@ const styles = StyleSheet.create({
     login: {
         flex: 1,
         justifyContent: 'center',
+    },
+    container: {
+        flex: 1,
+    },
+    inner: {
+        padding: 24,
+        flex: 1,
+        justifyContent: "flex-end",
     },
     input: {
         borderRadius: 0,

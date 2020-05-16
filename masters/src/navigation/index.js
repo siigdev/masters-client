@@ -7,8 +7,9 @@ import Login from '../screens/Login';
 import Welcome from '../screens/Welcome';
 import Signup from '../screens/Signup';
 import Main from '../screens/Main';
+import Settings from '../screens/Settings';
+import Feedback from '../screens/Feedback';
 import ForgotPassword from '../screens/ForgotPassword';
-import { Text } from '../components';
 import { Ionicons } from '@expo/vector-icons';
 import { theme } from '../constants';
 
@@ -24,51 +25,44 @@ const authScreens = createStackNavigator({
     Login: {
         screen: Login,
         navigationOptions: {
-            headerTitle: <Text h1 bold>Login</Text>,
+            headerTitle: "Login",
         },
     },
     Signup: {
         screen: Signup,
         navigationOptions: {
-            headerTitle: <Text h1 bold>Sign Up</Text>,
+            headerTitle: "Sign Up",
         },
     },
     ForgotPassword: {
         screen: ForgotPassword,
         navigationOptions: {
-            headerTitle: <Text h1 bold>Forgot Password</Text>,
+            headerTitle: "Forgot Password",
         }
     }
-}, {
-    transitionConfig: () => fromLeft(500),
-    defaultNavigationOptions: {
-        headerStyle: {
-            backgroundColor: "Transparent",
-            shadowColor: "Transparent",
-            elevation: 0,
-            shadowRadius: 0,
-            borderBottomColor: "transparent",
-        }
-    }
-})
-const mainScreen = createStackNavigator({
-    Main: {
-        screen: Main,
-        navigationOptions: {
-            headerStyle: {
-                height: 0
-            }
-        }
-    },
 })
 const screens = createBottomTabNavigator({
     mainScreen: {
-        screen: mainScreen,
+        screen: Main,
         navigationOptions: {
             tabBarIcon: <Ionicons name={'md-home'} size={25} />,
             title: 'Main',
         },
-    }
+    },
+    feedbackScreen: {
+        screen: Feedback,
+        navigationOptions: {
+            tabBarIcon: <Ionicons name={'md-home'} size={25} />,
+            title: 'Feedback',
+        },
+    },
+    settingsScreen: {
+        screen: Settings,
+        navigationOptions: {
+            tabBarIcon: <Ionicons name={'md-settings'} size={25} />,
+            title: 'Settings',
+        },
+    },
 }, {
     tabBarOptions: {
         activeTintColor: theme.colors.primary,
