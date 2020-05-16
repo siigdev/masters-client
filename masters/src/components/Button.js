@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import { StyleSheet, TouchableOpacity } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { theme } from '../constants';
-import { AppConsumer } from '../AppContextProvider'
 
 class Button extends Component {
   render() {
@@ -29,8 +28,6 @@ class Button extends Component {
 
     if (gradient) {
       return (
-        <AppConsumer>
-        {appConsumer => (
         <TouchableOpacity
           style={buttonStyles}
           activeOpacity={opacity}
@@ -41,13 +38,11 @@ class Button extends Component {
             end={end}
             locations={locations}
             style={buttonStyles}
-            colors={[appConsumer.theme.colors.primary, appConsumer.theme.colors.secondary]}
+            colors={[theme.colors.primary, theme.colors.secondary]}
           >
             {children}
           </LinearGradient>
         </TouchableOpacity>
-        )}
-        </AppConsumer>
       )
     }
 

@@ -2,7 +2,6 @@ import React, { Component } from "react";
 import { Text, StyleSheet } from "react-native";
 
 import { theme } from "../constants";
-import { AppConsumer } from "../AppContextProvider";
 
 export default class Typography extends Component {
   render() {
@@ -43,8 +42,6 @@ export default class Typography extends Component {
       ...props
     } = this.props;
     return (
-      <AppConsumer>
-        {appConsumer => (
           <Text style={[
             styles.text,
             h1 && styles.h1,
@@ -70,19 +67,17 @@ export default class Typography extends Component {
             color && styles[color],
             color && !styles[color] && { color },
             accent && styles.accent,
-            primary && {color: appConsumer.theme.colors.primary},
-            secondary && {color: appConsumer.theme.colors.secondary},
-            tertiary && {color: appConsumer.theme.colors.tertiary},
-            black && {color: appConsumer.theme.colors.black},
-            white && {color: appConsumer.theme.colors.white},
-            gray && {color: appConsumer.theme.colors.gray},
-            gray2 && {color: appConsumer.theme.colors.gray2},
+            primary && {color: theme.colors.primary},
+            secondary && {color: theme.colors.secondary},
+            tertiary && {color: theme.colors.tertiary},
+            black && {color: theme.colors.black},
+            white && {color: theme.colors.white},
+            gray && {color: theme.colors.gray},
+            gray2 && {color: theme.colors.gray2},
             style
           ]} {...props}>
             {children}
           </Text>
-        )}
-      </AppConsumer>
     );
   }
 }

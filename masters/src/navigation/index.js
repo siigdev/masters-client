@@ -2,6 +2,15 @@ import React, { Component } from 'react';
 import { createAppContainer, createSwitchNavigator } from 'react-navigation';
 import { createBottomTabNavigator } from 'react-navigation-tabs'
 import { createStackNavigator } from 'react-navigation-stack';
+import AuthLoadingScreen from '../screens/AuthLoadingScreen';
+import Login from '../screens/Login';
+import Welcome from '../screens/Welcome';
+import Signup from '../screens/Signup';
+import Main from '../screens/Main';
+import ForgotPassword from '../screens/ForgotPassword';
+import { Text } from '../components';
+import { Ionicons } from '@expo/vector-icons';
+import { theme } from '../constants';
 
 const authLoadingScreen = createStackNavigator({
     AuthLoadingScreen: {
@@ -59,14 +68,7 @@ const screens = createBottomTabNavigator({
             tabBarIcon: <Ionicons name={'md-home'} size={25} />,
             title: 'Main',
         },
-    },
-    statisticsScreen: {
-        screen: statisticsScreen,
-        navigationOptions: {
-            tabBarIcon: <Ionicons name={'md-trophy'} size={25} />,
-            title: 'Statistics',
-        },
-    },
+    }
 }, {
     tabBarOptions: {
         activeTintColor: theme.colors.primary,
@@ -77,7 +79,7 @@ const screens = createBottomTabNavigator({
 export default createAppContainer(createSwitchNavigator(
     {
         AuthLoading: authLoadingScreen,
-        App: screens, productScreen,
+        App: screens,
         Auth: authScreens,
     },
     {
