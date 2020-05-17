@@ -26,9 +26,9 @@ export default class Main extends Component {
             longitudeDelta: 0.01
         }
     };
-    
+
     componentDidMount() {
-            this.getNewRoom()
+        this.getNewRoom()
     }
     _handleMapRegionChange = mapRegion => {
         this.setState({ mapRegion });
@@ -36,9 +36,9 @@ export default class Main extends Component {
 
     getNewRoom() {
         const rooms = ["U-1", "U-2", "U-3", "U-4", "U-5"]
-        const randomRoom = rooms[Math.floor(Math.random() * rooms.length)];
-        firebase.database().ref('place/').child(randomRoom).once('value', (snapshot) => {
-            try {this.setState({
+        let randomRoom = rooms[Math.floor(Math.random() * rooms.length)];
+        firebase.database().ref('place/').child(randomRoom).on('value', snapshot => {
+            this.setState({
                 room: {
                     name: snapshot.val().name,
                     decibel: snapshot.val().Decibel,
@@ -49,10 +49,7 @@ export default class Main extends Component {
                     isTempBooked: snapshot.val().isTempBooked,
                 }
             })
-        } catch {
-            console.warn(err)
-        }
-        });
+        })
     }
     renderRoom() {
         const { room } = this.state;
@@ -63,11 +60,11 @@ export default class Main extends Component {
                         <Text spacing={0.7}>Din anbefaling lige nu er </Text>
 
                         <Block row style={{ paddingTop: 10 }}>
-                            <Text style={{padding: theme.sizes.padding/2}} ><Ionicons name="md-pin" size={40} color={theme.colors.gray2} /></Text>
+                            <Text style={{ padding: theme.sizes.padding / 2 }} ><Ionicons name="md-pin" size={40} color={theme.colors.gray2} /></Text>
                             <Text h1>{room.name}</Text>
                         </Block>
 
-                        <TouchableOpacity onPress={this.getNewRoom()}>
+                        <TouchableOpacity onPress={this.getNewRoom.bind(this)}>
                             <Text primary spacing={0.3} style={{ paddingTop: 10 }}>Ønsker du et andet rum?</Text>
                         </TouchableOpacity>
                     </Block>
@@ -145,63 +142,63 @@ const styles = StyleSheet.create({
 });
 
 const mapStyle =
-[
-    {
-      "elementType": "labels",
-      "stylers": [
+    [
         {
-          "visibility": "off"
-        }
-      ]
-    },
-    {
-      "featureType": "administrative",
-      "elementType": "geometry",
-      "stylers": [
+            "elementType": "labels",
+            "stylers": [
+                {
+                    "visibility": "off"
+                }
+            ]
+        },
         {
-          "visibility": "off"
-        }
-      ]
-    },
-    {
-      "featureType": "administrative.land_parcel",
-      "stylers": [
+            "featureType": "administrative",
+            "elementType": "geometry",
+            "stylers": [
+                {
+                    "visibility": "off"
+                }
+            ]
+        },
         {
-          "visibility": "off"
-        }
-      ]
-    },
-    {
-      "featureType": "administrative.neighborhood",
-      "stylers": [
+            "featureType": "administrative.land_parcel",
+            "stylers": [
+                {
+                    "visibility": "off"
+                }
+            ]
+        },
         {
-          "visibility": "off"
-        }
-      ]
-    },
-    {
-      "featureType": "poi",
-      "stylers": [
+            "featureType": "administrative.neighborhood",
+            "stylers": [
+                {
+                    "visibility": "off"
+                }
+            ]
+        },
         {
-          "visibility": "off"
-        }
-      ]
-    },
-    {
-      "featureType": "road",
-      "elementType": "labels.icon",
-      "stylers": [
+            "featureType": "poi",
+            "stylers": [
+                {
+                    "visibility": "off"
+                }
+            ]
+        },
         {
-          "visibility": "off"
-        }
-      ]
-    },
-    {
-      "featureType": "transit",
-      "stylers": [
+            "featureType": "road",
+            "elementType": "labels.icon",
+            "stylers": [
+                {
+                    "visibility": "off"
+                }
+            ]
+        },
         {
-          "visibility": "off"
+            "featureType": "transit",
+            "stylers": [
+                {
+                    "visibility": "off"
+                }
+            ]
         }
-      ]
-    }
-  ]
+    ]
