@@ -14,7 +14,6 @@ export default class Settings extends Component {
         birthday: new Date('2020-06-12T14:42:42'),
         newsletter: true,
         notifications: true,
-        profile: { name: 'Sebastian' },
         editing: null,
         feedback: [],
         isLoading: false,
@@ -31,19 +30,19 @@ export default class Settings extends Component {
                     gender: snapshot.val().gender,
                     organization: snapshot.val().organization,
                     name: snapshot.val().name,
+                    birthday: new Date(snapshot.val().birthday),
                     email: email,
                     newsletter: snapshot.val().newsletter,
                     notifications: snapshot.val().notifications,
                     isLoading: false
                 })
             } catch {
-                console.warn(err)
+                console.warn("error")
             }
         });
     }
     saveSettings() {
         const currUser = firebase.auth().currentUser.uid;
-        console.warn("hmm")
         firebase.database().ref('users/').child(currUser).update({
             name: this.state.name,
             birthday: this.state.birthday,
@@ -52,10 +51,9 @@ export default class Settings extends Component {
             newsletter: this.state.newsletter,
         }).then((data) => {
             //success callback
-            console.log('data ', data)
         }).catch((error) => {
             //error callback
-            console.log('error ', error)
+            console.warn('error ', error)
         })
     }
     handleEdit(text) {
@@ -86,10 +84,9 @@ export default class Settings extends Component {
                 name: this.state.name,
             }).then((data) => {
                 //success callback
-                console.log('data ', data)
             }).catch((error) => {
                 //error callback
-                console.log('error ', error)
+                console.warn('error ', error)
             })
         }
     }
@@ -141,42 +138,50 @@ export default class Settings extends Component {
                                     <Image source={require('../assets/images/avatar.png')} style={styles.avatar}></Image>
                                 </Block>
                                 <Block style={{ padding: theme.sizes.base }}>
-                                    <Text style={{ marginBottom: 10, marginTop: 10 }}>PROFILE</Text>
+                                    <Text style={{ marginBottom: 10, marginTop: 10 }}>PROFIL</Text>
                                     <Card shadow>
                                         <Block row space="between" margin={[10, 0]} style={styles.inputRow}>
                                             <Block>
-                                                <Text gray2 style={{ marginBottom: 5 }}>Organization</Text>
+                                                <Text gray2 style={{ marginBottom: 5 }}>Organisation</Text>
                                                 <Text>{organization}</Text>
                                             </Block>
-                                        </Block>
-
-
-                                        <Block row space="between" margin={[10, 0]} style={styles.inputRow}>
-                                            <Block>
-                                                <Text gray2 style={{ marginBottom: 5 }}>Name</Text>
-                                                {this.renderEdit('name')}
-                                            </Block>
-                                            <Text medium primary style={{ marginBottom: 5 }} onPress={() => this.toggleEdit('name')}>
-                                                {editing === 'name' ? 'Save' : 'Edit'}
-                                            </Text>
                                         </Block>
 
                                         <Block row space="between" margin={[10, 0]} style={styles.inputRow}>
                                             <Block>
                                                 <Text gray2 style={{ marginBottom: 5 }}>Email</Text>
-                                                <Text style={{ marginBottom: theme.sizes.base }}>{email}</Text>
+                                                <Text>{email}</Text>
                                             </Block>
                                         </Block>
-                                        <Text gray2 style={{ marginBottom: 5 }}>Birthday</Text>
-                                        {show && <DateTimePicker value={this.state.birthday}
-                                            mode={'date'}
-                                            is24Hour={true}
-                                            display="default"
-                                            onChange={this.setDate} />
-                                        }
-                                        <TouchableOpacity onPress={this.timepicker}>
-                                        <Text style={{ marginBottom: theme.sizes.base }}>{this.getDate()}</Text>
-                                        </TouchableOpacity>
+
+                                        <Block row space="between" margin={[10, 0]} style={styles.inputRow}>
+                                            <Block>
+                                                <Text gray2 style={{ marginBottom: 5 }}>Navn</Text>
+                                                {this.renderEdit('name')}
+                                            </Block>
+                                            <Text medium primary style={{ marginBottom: 5 }} onPress={() => this.toggleEdit('name')}>
+                                                {editing === 'name' ? 'Gem' : 'Rediger'}
+                                            </Text>
+                                        </Block>
+
+                                        <Block row space="between" margin={[10, 0]} style={styles.inputRow}>
+                                            <Block>
+                                                <Text gray2 style={{ marginBottom: 5 }}>Fødselsdato</Text>
+                                                {show && <DateTimePicker value={this.state.birthday}
+                                                    mode={'date'}
+                                                    is24Hour={true}
+                                                    display="default"
+                                                    onChange={this.setDate} />
+                                                }
+                                                <TouchableOpacity onPress={this.timepicker}>
+                                                    <Text style={{ marginBottom: theme.sizes.base }}>{this.getDate()}</Text>
+                                                </TouchableOpacity>
+                                            </Block>
+                                            <Text medium primary style={{ marginBottom: 15 }} onPress={this.timepicker}>
+                                                {'Rediger'}
+                                            </Text>
+                                        </Block>
+
                                         <Block row style={{
                                             flexDirection: 'row',
                                             borderRadius: 14,
@@ -188,28 +193,28 @@ export default class Settings extends Component {
                                                 style={[styles.button, styles.first, gender === 'Male' ? { backgroundColor: theme.colors.primary } : null]}
                                                 onPress={() => this.setState({ gender: 'Male' })}
                                             >
-                                                <Text style={[styles.buttonText, gender === 'Male' ? styles.activeText : null]}>Male</Text>
+                                                <Text style={[styles.buttonText, gender === 'Male' ? styles.activeText : null]}>Mand</Text>
                                             </TouchableOpacity>
                                             <TouchableOpacity
                                                 style={[styles.button, styles.last, gender === 'Female' ? { backgroundColor: theme.colors.primary } : null]}
                                                 onPress={() => this.setState({ gender: 'Female' })}
                                             >
-                                                <Text style={[styles.buttonText, gender === 'Female' ? styles.activeText : null]}>Female</Text>
+                                                <Text style={[styles.buttonText, gender === 'Female' ? styles.activeText : null]}>Kvinde</Text>
                                             </TouchableOpacity>
                                         </Block>
 
                                     </Card>
-                                    <Text style={{ marginBottom: 10, marginTop: 10 }}>ACCOUNT</Text>
+                                    <Text style={{ marginBottom: 10, marginTop: 10 }}>KONTO</Text>
                                     <Card shadow>
                                         <Block row center space="between" style={{ marginBottom: theme.sizes.base }}>
-                                            <Text gray2>Newsletter</Text>
+                                            <Text gray2>Nyhedsbrev</Text>
                                             <Switch
                                                 value={this.state.newsletter}
                                                 onValueChange={value => this.setState({ newsletter: value })}
                                             />
                                         </Block>
                                         <Block row center space="between" style={{ marginBottom: theme.sizes.base }}>
-                                            <Text gray2>Notifications</Text>
+                                            <Text gray2>Notifikationer</Text>
                                             <Switch
                                                 value={this.state.notifications}
                                                 onValueChange={value => this.setState({ notifications: value })}
@@ -217,11 +222,11 @@ export default class Settings extends Component {
                                         </Block>
                                     </Card>
                                     <Button gradient onPress={() => this.saveSettings()}>
-                                        <Text bold white center>Save Settings</Text>
+                                        <Text bold white center>Gem Indstillinger</Text>
                                     </Button>
 
                                     <Button title="Actually, sign me out :)" onPress={this._signOutAsync}>
-                                        <Text bold black center>Log Out</Text>
+                                        <Text bold black center>Log Ud</Text>
                                     </Button>
                                 </Block>
                             </Block>

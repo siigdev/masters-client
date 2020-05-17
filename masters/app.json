@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "HelloWorld",
+    "name": "Place",
     "slug": "masters",
     "platforms": [
       "ios",
@@ -23,6 +23,11 @@
     ],
     "ios": {
       "supportsTablet": true
+    },
+    "android": {
+      "package": "dk.master.place",
+      "googleServicesFile": "./google-services.json",
+      "versionCode": 1
     }
   }
 }

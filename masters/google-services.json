@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "934016800279",
+    "firebase_url": "https://place-ukrcwm.firebaseio.com",
+    "project_id": "place-ukrcwm",
+    "storage_bucket": "place-ukrcwm.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:934016800279:android:0c0b4f625de7d769886e52",
+        "android_client_info": {
+          "package_name": "dk.master.place"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "934016800279-8cqhug3a4csjroqopgb1drea6is0tr7v.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCRmEcZ9s1qbpSRSxwQgg6fj5SwrLeq4js"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "934016800279-21e9nqv7o6ue8amq1b7f49slo30037p6.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

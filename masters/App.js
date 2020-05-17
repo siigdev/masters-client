@@ -1,15 +1,17 @@
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
 import firebase from 'firebase';
 import ApiKeys from './src/constants/APIKeys';
 import { Block } from './src/components';
 import Navigation from './src/navigation';
+import { AppContextProvider } from './src/AppContextProvider'
 
 export default function App() {
   firebase.initializeApp(ApiKeys.FirebaseConfig);
   return (
-    <Block>
+    <AppContextProvider>
+      <Block>
         <Navigation />
-    </Block>
+      </Block>
+    </AppContextProvider>
   );
 }

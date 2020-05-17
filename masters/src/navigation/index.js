@@ -42,21 +42,21 @@ const authScreens = createStackNavigator({
     }
 })
 const screens = createBottomTabNavigator({
-    mainScreen: {
+    Main: {
         screen: Main,
         navigationOptions: {
             tabBarIcon: <Ionicons name={'md-home'} size={25} />,
             title: 'Main',
         },
     },
-    feedbackScreen: {
+    Feedback: {
         screen: Feedback,
         navigationOptions: {
             tabBarIcon: <Ionicons name={'md-home'} size={25} />,
             title: 'Feedback',
         },
     },
-    settingsScreen: {
+    Settings: {
         screen: Settings,
         navigationOptions: {
             tabBarIcon: <Ionicons name={'md-settings'} size={25} />,

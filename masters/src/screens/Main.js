@@ -1,10 +1,13 @@
 import React, { Component } from 'react'
 import { Button, Block, Text, Card } from '../components';
-import { AsyncStorage, TouchableOpacity, Dimensions, Image, StyleSheet, ScrollView } from 'react-native';
+import { AsyncStorage, TouchableOpacity, Dimensions, Image, StyleSheet, ScrollView, Vibration, Platform  } from 'react-native';
 import { theme } from '../constants';
 import firebase from 'firebase';
-import MapView from 'react-native-maps';
+import MapView, { Marker } from 'react-native-maps';
 import { Ionicons } from '@expo/vector-icons';
+import { Notifications } from 'expo';
+import * as Permissions from 'expo-permissions';
+import Constants from 'expo-constants';
 
 const { width, height } = Dimensions.get('window');
 
@@ -22,14 +25,70 @@ export default class Main extends Component {
         mapRegion: {
             latitude: 55.366910,
             longitude: 10.430083,
-            latitudeDelta: 0.01,
-            longitudeDelta: 0.01
-        }
+            latitudeDelta: 0.0005,
+            longitudeDelta: 0.0005
+        },
+        expoPushToken: '',
+        notification: {},
     };
 
     componentDidMount() {
-        this.getNewRoom()
+        this.getNewRoom();
+        this.registerForPushNotificationsAsync();
+        this._notificationSubscription = Notifications.addListener(this._handleNotification);
     }
+    registerForPushNotificationsAsync = async () => {
+        if (Constants.isDevice) {
+          const { status: existingStatus } = await Permissions.getAsync(Permissions.NOTIFICATIONS);
+          let finalStatus = existingStatus;
+          if (existingStatus !== 'granted') {
+            const { status } = await Permissions.askAsync(Permissions.NOTIFICATIONS);
+            finalStatus = status;
+          }
+          if (finalStatus !== 'granted') {
+            alert('Failed to get push token for push notification!');
+            return;
+          }
+          token = await Notifications.getExpoPushTokenAsync();
+          this.setState({ expoPushToken: token });
+        } else {
+          alert('Must use physical device for Push Notifications');
+        }
+    
+        if (Platform.OS === 'android') {
+          Notifications.createChannelAndroidAsync('default', {
+            name: 'default',
+            sound: true,
+            priority: 'max',
+            vibrate: [0, 250, 250, 250],
+          });
+        }
+      };
+
+      _handleNotification = notification => {
+        Vibration.vibrate();
+        this.setState({ notification: notification });
+      };
+      sendPushNotification = async () => {
+        const message = {
+          to: this.state.expoPushToken,
+          sound: 'default',
+          title: 'Original Title',
+          body: 'And here is the body!',
+          data: { data: 'goes here' },
+          _displayInForeground: true,
+        };
+        const response = await fetch('https://exp.host/--/api/v2/push/send', {
+          method: 'POST',
+          headers: {
+            Accept: 'application/json',
+            'Accept-encoding': 'gzip, deflate',
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(message),
+        });
+      };
+
     _handleMapRegionChange = mapRegion => {
         this.setState({ mapRegion });
     };
@@ -47,6 +106,12 @@ export default class Main extends Component {
                     temperature: snapshot.val().Temperature,
                     isBooked: snapshot.val().isBooked,
                     isTempBooked: snapshot.val().isTempBooked,
+                },
+                mapRegion: {
+                    latitude: snapshot.val().long,
+                    longitude: snapshot.val().lat,
+                    latitudeDelta: 0.0005,
+                    longitudeDelta: 0.0005
                 }
             })
         })
@@ -73,7 +138,12 @@ export default class Main extends Component {
                         <MapView
                             region={this.state.mapRegion}
                             customMapStyle={mapStyle}
-                            onRegionChange={this._handleMapRegionChange} style={styles.mapStyle} />
+                            onRegionChange={this._handleMapRegionChange} style={styles.mapStyle}
+                        >
+                            <Marker
+                                coordinate={this.state.mapRegion}
+                            />
+                        </MapView>
                     </Block>
                 </Block>
             </Card>
@@ -124,6 +194,7 @@ export default class Main extends Component {
                     {this.renderRoomDetails()}
 
                 </Block>
+                <Button gradient title={'Press to Send Notification'} onPress={() => this.sendPushNotification()} />
             </ScrollView>
         )
     }

@@ -16,7 +16,7 @@ export default class Signup extends Component {
         const { navigation } = this.props;
         await AsyncStorage.setItem('userToken', 'abc');
         const currUser = firebase.auth().currentUser.uid;
-        console.warn(currUser)
+        const email = firebase.auth().currentUser.email;
         firebase.database().ref('users/').child(currUser).set({
             name: '',
             gender: 'Male',
@@ -33,7 +33,6 @@ export default class Signup extends Component {
         try {
             firebase.auth().createUserWithEmailAndPassword(email.replace(/\s/g, ''), password).then(() => {
                 this._signInAsync()
-                console.warn("1")
             }).catch(error => {
                 this.setState({ isLoading: false });
                 switch (error.code) {
