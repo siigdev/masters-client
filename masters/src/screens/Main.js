@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import { Button, Block, Text, Card } from '../components';
-import { AsyncStorage, Dimensions, Image, StyleSheet, ScrollView } from 'react-native';
+import { AsyncStorage, TouchableOpacity, Dimensions, Image, StyleSheet, ScrollView } from 'react-native';
 import { theme } from '../constants';
 import firebase from 'firebase';
 import MapView from 'react-native-maps';
@@ -11,6 +11,7 @@ const { width, height } = Dimensions.get('window');
 export default class Main extends Component {
     state = {
         room: {
+            name: 'Ø22-603-0, Bygning 44',
             decibel: 0,
             lux: 0,
             occupants: 0,
@@ -25,30 +26,36 @@ export default class Main extends Component {
             longitudeDelta: 0.01
         }
     };
-    componentDidMount() {
-            const currUser = firebase.auth().currentUser.uid;
-            const email = firebase.auth().currentUser.email;
     
-            firebase.database().ref('place/').child('U-2').once('value', (snapshot) => {
-                try {this.setState({
-                    room: {
-                        decibel: snapshot.val().Decibel,
-                        lux: snapshot.val().Lux,
-                        occupants: snapshot.val().Occupants,
-                        temperature: snapshot.val().Temperature,
-                        isBooked: snapshot.val().isBooked,
-                        isTempBooked: snapshot.val().isTempBooked,
-                    }
-                })
-            } catch {
-                console.warn(err)
-            }
-            });
+    componentDidMount() {
+            this.getNewRoom()
     }
     _handleMapRegionChange = mapRegion => {
         this.setState({ mapRegion });
     };
+
+    getNewRoom() {
+        const rooms = ["U-1", "U-2", "U-3", "U-4", "U-5"]
+        const randomRoom = rooms[Math.floor(Math.random() * rooms.length)];
+        firebase.database().ref('place/').child(randomRoom).once('value', (snapshot) => {
+            try {this.setState({
+                room: {
+                    name: snapshot.val().name,
+                    decibel: snapshot.val().Decibel,
+                    lux: snapshot.val().Lux,
+                    occupants: snapshot.val().Occupants,
+                    temperature: snapshot.val().Temperature,
+                    isBooked: snapshot.val().isBooked,
+                    isTempBooked: snapshot.val().isTempBooked,
+                }
+            })
+        } catch {
+            console.warn(err)
+        }
+        });
+    }
     renderRoom() {
+        const { room } = this.state;
         return (
             <Card shadow style={{ padding: theme.sizes.base }}>
                 <Block row>
@@ -57,16 +64,18 @@ export default class Main extends Component {
 
                         <Block row style={{ paddingTop: 10 }}>
                             <Text style={{padding: theme.sizes.padding/2}} ><Ionicons name="md-pin" size={40} color={theme.colors.gray2} /></Text>
-                            <Text h1>Ø22-603-0, Bygning 44</Text>
+                            <Text h1>{room.name}</Text>
                         </Block>
-                        <Text primary spacing={0.3} style={{ paddingTop: 10 }}>Ønsker du et andet rum?</Text>
+
+                        <TouchableOpacity onPress={this.getNewRoom()}>
+                            <Text primary spacing={0.3} style={{ paddingTop: 10 }}>Ønsker du et andet rum?</Text>
+                        </TouchableOpacity>
                     </Block>
 
                     <Block flex={1}>
                         <MapView
                             region={this.state.mapRegion}
                             customMapStyle={mapStyle}
-                            //provider={MapView.PROVIDER_GOOGLE}
                             onRegionChange={this._handleMapRegionChange} style={styles.mapStyle} />
                     </Block>
                 </Block>
@@ -74,7 +83,7 @@ export default class Main extends Component {
         )
     }
     renderRoomDetails() {
-        const { decibel, lux, occupants, temperature, isBooked, isTempBooked } = this.state;
+        const { room } = this.state;
         return (
             <Card shadow style={{ padding: theme.sizes.base }}>
 
@@ -83,22 +92,22 @@ export default class Main extends Component {
                     <Block center>
                         <Text style={{ padding: theme.sizes.base / 2 }}><Ionicons name="md-thermometer" size={32} color="#D3E2B0" /></Text>
                         <Text caption gray2>Temperatur</Text>
-                        <Text h3>{this.state.room.temperature}°</Text>
+                        <Text h3>{room.temperature}°</Text>
                     </Block>
                     <Block center>
                         <Text style={{ padding: theme.sizes.base / 2 }}><Ionicons name="md-mic" size={32} color="#E88615" /></Text>
                         <Text caption gray2>Lydstyrke</Text>
-                        <Text h3>{this.state.room.lux}</Text>
+                        <Text h3>{room.lux}</Text>
                     </Block>
                     <Block center>
                         <Text style={{ padding: theme.sizes.base / 2 }}><Ionicons name="md-sunny" size={32} color="#5E82B6" /></Text>
                         <Text caption gray2>Støvniveau</Text>
-                        <Text h3>{this.state.room.decibel}db</Text>
+                        <Text h3>{room.decibel}db</Text>
                     </Block>
                     <Block center>
                         <Text style={{ padding: theme.sizes.base / 2 }}><Ionicons name="md-people" size={32} color="#EF7575" /></Text>
                         <Text caption gray2>Personer</Text>
-                        <Text h3>{this.state.room.occupants}</Text>
+                        <Text h3>{room.occupants}</Text>
                     </Block>
                 </Block>
             </Card>

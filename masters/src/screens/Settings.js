@@ -1,35 +1,132 @@
 import React, { Component } from 'react'
-import { Button, Block, Text, Divider, Switch, Card } from '../components';
-import { AsyncStorage, ActivityIndicator, Dimensions, Image, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
-import DatePicker from 'react-native-datepicker'
+import { Button, Block, Text, Switch, Card } from '../components';
+import { AsyncStorage, ActivityIndicator, Image, StyleSheet, ScrollView, TouchableOpacity, TextInput } from 'react-native';
+import DateTimePicker from '@react-native-community/datetimepicker'
 import firebase from 'firebase';
 import { theme } from '../constants';
 
-const { width, height } = Dimensions.get('window');
 
 export default class Settings extends Component {
     state = {
         gender: 'Male',
         name: '',
-        weight: 75,
-        height: 180,
         email: '',
+        birthday: new Date('2020-06-12T14:42:42'),
         newsletter: true,
         notifications: true,
         profile: { name: 'Sebastian' },
         editing: null,
-        errors: [],
+        feedback: [],
         isLoading: false,
+        show: false,
     }
 
+    componentDidMount() {
+        const currUser = firebase.auth().currentUser.uid;
+        const email = firebase.auth().currentUser.email;
+
+        firebase.database().ref('users/').child(currUser).once('value', (snapshot) => {
+            try {
+                this.setState({
+                    gender: snapshot.val().gender,
+                    organization: snapshot.val().organization,
+                    name: snapshot.val().name,
+                    email: email,
+                    newsletter: snapshot.val().newsletter,
+                    notifications: snapshot.val().notifications,
+                    isLoading: false
+                })
+            } catch {
+                console.warn(err)
+            }
+        });
+    }
+    saveSettings() {
+        const currUser = firebase.auth().currentUser.uid;
+        console.warn("hmm")
+        firebase.database().ref('users/').child(currUser).update({
+            name: this.state.name,
+            birthday: this.state.birthday,
+            gender: this.state.gender,
+            notifications: this.state.notifications,
+            newsletter: this.state.newsletter,
+        }).then((data) => {
+            //success callback
+            console.log('data ', data)
+        }).catch((error) => {
+            //error callback
+            console.log('error ', error)
+        })
+    }
+    handleEdit(text) {
+        this.setState({ name: text });
+    }
+    renderEdit(value) {
+        const { name, editing } = this.state;
+
+        if (editing === value) {
+            return (
+                <TextInput
+                    autoFocus={true}
+                    defaultValue={name}
+                    onChangeText={text => this.handleEdit(text)}
+                    style={{ height: 25, borderBottomWidth: StyleSheet.hairlineWidth, borderColor: theme.colors.black, marginRight: 20 }}
+                />
+            )
+        }
+
+        return <Text style={{ height: 25 }}>{name}</Text>
+    }
+    toggleEdit(name) {
+        const { editing } = this.state;
+        this.setState({ editing: !editing ? name : null });
+        if (editing == name) {
+            const currUser = firebase.auth().currentUser.uid;
+            firebase.database().ref('users/').child(currUser).update({
+                name: this.state.name,
+            }).then((data) => {
+                //success callback
+                console.log('data ', data)
+            }).catch((error) => {
+                //error callback
+                console.log('error ', error)
+            })
+        }
+    }
     _signOutAsync = async () => {
         const { navigation } = this.props;
         await AsyncStorage.clear();
         firebase.auth().signOut();
         navigation.navigate('Welcome');
     }
+    setDate = (event, date) => {
+        date = date || this.state.birthday;
+
+        this.setState({
+            show: false,
+            birthday: date,
+        });
+    }
+    getDate() {
+        return this.state.birthday.toDateString();
+    }
+
+    show = mode => {
+        this.setState({
+            show: true,
+        });
+    }
+
+    datepicker = () => {
+        this.show('date');
+    }
+
+    timepicker = () => {
+        this.show('time');
+    }
+
     render() {
-        const { isLoading, editing, gender, email } = this.state;
+        const { isLoading, organization, editing, gender, email, show } = this.state;
         return (
             <Block style={{
                 flex: 1,
@@ -37,121 +134,101 @@ export default class Settings extends Component {
             }}>
                 {isLoading ?
                     <Block middle><ActivityIndicator size={100} color={theme.colors.primary} /></Block> :
-                    <ScrollView showsVerticalScrollIndicator={false} style={{ backgroundColor: theme.colors.gray4}}>
+                    <ScrollView showsVerticalScrollIndicator={false} style={{ backgroundColor: theme.colors.gray4 }}>
                         <Block>
                             <Block middle>
                                 <Block padding={theme.sizes.base * 2} style={{ backgroundColor: theme.colors.primary }}>
                                     <Image source={require('../assets/images/avatar.png')} style={styles.avatar}></Image>
                                 </Block>
-<Block style={{ padding: theme.sizes.base }}>
-                                    <Text style={{marginBottom: 10, marginTop: 10}}>PROFILE</Text>
-                                <Card shadow>
-                                    <Block row space="between" margin={[10, 0]} style={styles.inputRow}>
-                                        <Block>
-                                            <Text gray2 style={{ marginBottom: 5 }}>Username</Text>
+                                <Block style={{ padding: theme.sizes.base }}>
+                                    <Text style={{ marginBottom: 10, marginTop: 10 }}>PROFILE</Text>
+                                    <Card shadow>
+                                        <Block row space="between" margin={[10, 0]} style={styles.inputRow}>
+                                            <Block>
+                                                <Text gray2 style={{ marginBottom: 5 }}>Organization</Text>
+                                                <Text>{organization}</Text>
+                                            </Block>
                                         </Block>
-                                        <Text medium primary style={{ marginBottom: 5 }} onPress={() => this.toggleEdit('name')}>
-                                            {editing === 'name' ? 'Save' : 'Edit'}
-                                        </Text>
-                                    </Block>
 
 
-                                    <Block row space="between" margin={[10, 0]} style={styles.inputRow}>
-                                        <Block>
-                                            <Text gray2 style={{ marginBottom: 5 }}>Firstname</Text>
+                                        <Block row space="between" margin={[10, 0]} style={styles.inputRow}>
+                                            <Block>
+                                                <Text gray2 style={{ marginBottom: 5 }}>Name</Text>
+                                                {this.renderEdit('name')}
+                                            </Block>
+                                            <Text medium primary style={{ marginBottom: 5 }} onPress={() => this.toggleEdit('name')}>
+                                                {editing === 'name' ? 'Save' : 'Edit'}
+                                            </Text>
                                         </Block>
-                                        <Text medium primary style={{ marginBottom: 5 }} onPress={() => this.toggleEdit('name')}>
-                                            {editing === 'name' ? 'Save' : 'Edit'}
-                                        </Text>
-                                    </Block>
-                                    <Block row space="between" margin={[10, 0]} style={styles.inputRow}>
-                                        <Block>
-                                            <Text gray2 style={{ marginBottom: 5 }}>Lastname</Text>
+
+                                        <Block row space="between" margin={[10, 0]} style={styles.inputRow}>
+                                            <Block>
+                                                <Text gray2 style={{ marginBottom: 5 }}>Email</Text>
+                                                <Text style={{ marginBottom: theme.sizes.base }}>{email}</Text>
+                                            </Block>
                                         </Block>
-                                        <Text medium primary style={{ marginBottom: 5 }} onPress={() => this.toggleEdit('name')}>
-                                            {editing === 'name' ? 'Save' : 'Edit'}
-                                        </Text>
-                                    </Block>
-                                    <Block row space="between" margin={[10, 0]} style={styles.inputRow}>
-                                        <Block>
-                                            <Text gray2 style={{ marginBottom: 5 }}>Email</Text>
-                                            <Text style={{ marginBottom: theme.sizes.base }}>{email}</Text>
-                                        </Block>
-                                    </Block>
-                                    <Text gray2 style={{ marginBottom: 5 }}>Birthday</Text>
-                                    <DatePicker
-                                        style={{ width: 200 }}
-                                        date={this.state.date}
-                                        mode="date"
-                                        format="MMMM Do YYYY"
-                                        minDate="2016-05-01"
-                                        maxDate="2016-06-01"
-                                        confirmBtnText="Confirm"
-                                        cancelBtnText="Cancel"
-                                        showIcon={false}
-                                        customStyles={{
-                                            dateInput: {
-                                                justifyContent: 'flex-start',
-                                                alignItems: 'flex-start',
-                                                borderWidth: 0,
-                                                marginLeft: 0,
-                                                paddingLeft: 0
-                                            }
-                                        }}
-                                        onDateChange={(date) => { this.setState({ date: date }) }}
-                                    />
-                                    <Block row style={{
-                                        flexDirection: 'row',
-                                        borderRadius: 14,
-                                        borderWidth: 1,
-                                        justifyContent: 'space-between',
-                                        borderColor: theme.colors.primary
-                                    }}>
-                                        <TouchableOpacity
-                                            style={[styles.button, styles.first, gender === 'Male' ? { backgroundColor: theme.colors.primary } : null]}
-                                            onPress={() => this.setState({ gender: 'Male' })}
-                                        >
-                                            <Text style={[styles.buttonText, gender === 'Male' ? styles.activeText : null]}>Male</Text>
+                                        <Text gray2 style={{ marginBottom: 5 }}>Birthday</Text>
+                                        {show && <DateTimePicker value={this.state.birthday}
+                                            mode={'date'}
+                                            is24Hour={true}
+                                            display="default"
+                                            onChange={this.setDate} />
+                                        }
+                                        <TouchableOpacity onPress={this.timepicker}>
+                                        <Text style={{ marginBottom: theme.sizes.base }}>{this.getDate()}</Text>
                                         </TouchableOpacity>
-                                        <TouchableOpacity
-                                            style={[styles.button, styles.last, gender === 'Female' ? { backgroundColor: theme.colors.primary } : null]}
-                                            onPress={() => this.setState({ gender: 'Female' })}
-                                        >
-                                            <Text style={[styles.buttonText, gender === 'Female' ? styles.activeText : null]}>Female</Text>
-                                        </TouchableOpacity>
-                                    </Block>
+                                        <Block row style={{
+                                            flexDirection: 'row',
+                                            borderRadius: 14,
+                                            borderWidth: 1,
+                                            justifyContent: 'space-between',
+                                            borderColor: theme.colors.primary
+                                        }}>
+                                            <TouchableOpacity
+                                                style={[styles.button, styles.first, gender === 'Male' ? { backgroundColor: theme.colors.primary } : null]}
+                                                onPress={() => this.setState({ gender: 'Male' })}
+                                            >
+                                                <Text style={[styles.buttonText, gender === 'Male' ? styles.activeText : null]}>Male</Text>
+                                            </TouchableOpacity>
+                                            <TouchableOpacity
+                                                style={[styles.button, styles.last, gender === 'Female' ? { backgroundColor: theme.colors.primary } : null]}
+                                                onPress={() => this.setState({ gender: 'Female' })}
+                                            >
+                                                <Text style={[styles.buttonText, gender === 'Female' ? styles.activeText : null]}>Female</Text>
+                                            </TouchableOpacity>
+                                        </Block>
 
-                                </Card>
-                                <Text style={{marginBottom: 10, marginTop: 10}}>ACCOUNT</Text>
-                                <Card shadow>
-                                    <Block row center space="between" style={{ marginBottom: theme.sizes.base }}>
-                                        <Text gray2>Newsletter</Text>
-                                        <Switch
-                                            value={this.state.newsletter}
-                                            onValueChange={value => this.setState({ newsletter: value })}
-                                        />
-                                    </Block>
-                                    <Block row center space="between" style={{ marginBottom: theme.sizes.base }}>
-                                        <Text gray2>Notifications</Text>
-                                        <Switch
-                                            value={this.state.notifications}
-                                            onValueChange={value => this.setState({ notifications: value })}
-                                        />
-                                    </Block>
-                                </Card>
-                                <Button gradient onPress={() => this.saveSettings()}>
-                                    <Text bold white center>Save Settings</Text>
-                                </Button>
+                                    </Card>
+                                    <Text style={{ marginBottom: 10, marginTop: 10 }}>ACCOUNT</Text>
+                                    <Card shadow>
+                                        <Block row center space="between" style={{ marginBottom: theme.sizes.base }}>
+                                            <Text gray2>Newsletter</Text>
+                                            <Switch
+                                                value={this.state.newsletter}
+                                                onValueChange={value => this.setState({ newsletter: value })}
+                                            />
+                                        </Block>
+                                        <Block row center space="between" style={{ marginBottom: theme.sizes.base }}>
+                                            <Text gray2>Notifications</Text>
+                                            <Switch
+                                                value={this.state.notifications}
+                                                onValueChange={value => this.setState({ notifications: value })}
+                                            />
+                                        </Block>
+                                    </Card>
+                                    <Button gradient onPress={() => this.saveSettings()}>
+                                        <Text bold white center>Save Settings</Text>
+                                    </Button>
 
-                                <Button title="Actually, sign me out :)" onPress={this._signOutAsync}>
-                                    <Text bold black center>Log Out</Text>
-                                </Button>
+                                    <Button title="Actually, sign me out :)" onPress={this._signOutAsync}>
+                                        <Text bold black center>Log Out</Text>
+                                    </Button>
+                                </Block>
                             </Block>
-                        </Block>
                         </Block>
                     </ScrollView>
                 }
-                
+
             </Block>
         )
     }

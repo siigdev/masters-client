@@ -13,7 +13,23 @@ const { width, height } = Dimensions.get('window');
 
 export default class Feedback extends Component {
     state = {
-        light: 1,
+        light: 0,
+        occupants: 0,
+        temperature: 0,
+        lux: 0
+    }
+    sendFeedback() {
+        const currUser = firebase.auth().currentUser.uid;
+        const email = firebase.auth().currentUser.email;
+        try {
+            firebase.database().ref('users/').child(currUser).child("feedback").child(Date.now()).set({
+                light: this.state.light,
+                test: 'test'
+            })
+         }
+        catch {
+            console.warn("err")
+        }
     }
     renderBackground() {
         return (
@@ -28,7 +44,7 @@ export default class Feedback extends Component {
             </View>
         )
     }
-    renderLight() {
+    renderContent() {
         return (
             <Block top center >
                 <Image
@@ -64,8 +80,8 @@ export default class Feedback extends Component {
                 {this.renderBackground()}
 
                 <Block bottom padding={theme.sizes.base}>
-                    <Button gradient onPress={() => this.saveSettings()}>
-                        <Text bold white center>Næste</Text>
+                    <Button gradient onPress={() => this.sendFeedback()}>
+                        <Text bold white center>Send feedback</Text>
                     </Button>
                 </Block>
             </Block>
