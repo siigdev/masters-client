@@ -10,6 +10,14 @@ const { width, height } = Dimensions.get('window');
 
 export default class Main extends Component {
     state = {
+        room: {
+            decibel: 0,
+            lux: 0,
+            occupants: 0,
+            temperature: 0,
+            isBooked: false,
+            isTempBooked: false
+        },
         mapRegion: {
             latitude: 55.366910,
             longitude: 10.430083,
@@ -17,6 +25,26 @@ export default class Main extends Component {
             longitudeDelta: 0.01
         }
     };
+    componentDidMount() {
+            const currUser = firebase.auth().currentUser.uid;
+            const email = firebase.auth().currentUser.email;
+    
+            firebase.database().ref('place/').child('U-2').once('value', (snapshot) => {
+                try {this.setState({
+                    room: {
+                        decibel: snapshot.val().Decibel,
+                        lux: snapshot.val().Lux,
+                        occupants: snapshot.val().Occupants,
+                        temperature: snapshot.val().Temperature,
+                        isBooked: snapshot.val().isBooked,
+                        isTempBooked: snapshot.val().isTempBooked,
+                    }
+                })
+            } catch {
+                console.warn(err)
+            }
+            });
+    }
     _handleMapRegionChange = mapRegion => {
         this.setState({ mapRegion });
     };
@@ -46,6 +74,7 @@ export default class Main extends Component {
         )
     }
     renderRoomDetails() {
+        const { decibel, lux, occupants, temperature, isBooked, isTempBooked } = this.state;
         return (
             <Card shadow style={{ padding: theme.sizes.base }}>
 
@@ -54,22 +83,22 @@ export default class Main extends Component {
                     <Block center>
                         <Text style={{ padding: theme.sizes.base / 2 }}><Ionicons name="md-thermometer" size={32} color="#D3E2B0" /></Text>
                         <Text caption gray2>Temperatur</Text>
-                        <Text h3>24,9°</Text>
+                        <Text h3>{this.state.room.temperature}°</Text>
                     </Block>
                     <Block center>
                         <Text style={{ padding: theme.sizes.base / 2 }}><Ionicons name="md-mic" size={32} color="#E88615" /></Text>
                         <Text caption gray2>Lydstyrke</Text>
-                        <Text h3>17l</Text>
+                        <Text h3>{this.state.room.lux}</Text>
                     </Block>
                     <Block center>
                         <Text style={{ padding: theme.sizes.base / 2 }}><Ionicons name="md-sunny" size={32} color="#5E82B6" /></Text>
                         <Text caption gray2>Støvniveau</Text>
-                        <Text h3>65db</Text>
+                        <Text h3>{this.state.room.decibel}db</Text>
                     </Block>
                     <Block center>
                         <Text style={{ padding: theme.sizes.base / 2 }}><Ionicons name="md-people" size={32} color="#EF7575" /></Text>
                         <Text caption gray2>Personer</Text>
-                        <Text h3>17</Text>
+                        <Text h3>{this.state.room.occupants}</Text>
                     </Block>
                 </Block>
             </Card>

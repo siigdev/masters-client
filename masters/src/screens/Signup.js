@@ -13,11 +13,18 @@ export default class Signup extends Component {
     }
 
     _signInAsync = async () => {
-        console.warn("2")
         const { navigation } = this.props;
         await AsyncStorage.setItem('userToken', 'abc');
+        const currUser = firebase.auth().currentUser.uid;
+        console.warn(currUser)
+        firebase.database().ref('users/').child(currUser).set({
+            name: '',
+            gender: 'Male',
+            notifications: true,
+            newsletter: false,
+            email: email,
+        })
         navigation.navigate("App");
-        console.warn("3")
     };
     signupHandler() {
         const { email, password } = this.state;
@@ -29,7 +36,6 @@ export default class Signup extends Component {
                 console.warn("1")
             }).catch(error => {
                 this.setState({ isLoading: false });
-                console.warn("4")
                 switch (error.code) {
                     case 'auth/invalid-email':
                         console.warn('Invalid mail')

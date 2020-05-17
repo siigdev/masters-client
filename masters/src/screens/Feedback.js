@@ -1,32 +1,71 @@
 import React, { Component } from 'react'
 import { Button, Block, Text, Card } from '../components';
-import { AsyncStorage, Image, StyleSheet } from 'react-native';
+import { AsyncStorage, Image, StyleSheet, View, Dimensions } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { theme } from '../constants';
 import firebase from 'firebase';
-import { Ionicons } from '@expo/vector-icons';
+import Slider from 'react-native-slider'
 
+
+
+const window = Dimensions.get('window');
+const { width, height } = Dimensions.get('window');
 
 export default class Feedback extends Component {
+    state = {
+        light: 1,
+    }
     renderBackground() {
-        <Block style={styles.container}>
-                        <Block style={styles.background} >
-                            <LinearGradient colors={[theme.colors.primary, theme.colors.secondary]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.linearGradient}>
-                                
-                            </LinearGradient>
-                        </Block>
-                    </Block>
+        return (
+            <View style={styles.container}>
+                <View style={styles.background} >
+                    <LinearGradient colors={[theme.colors.primary, theme.colors.secondary]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.linearGradient}>
+                        <View style={styles.content}>
+                            {this.renderContent()}
+                        </View>
+                    </LinearGradient>
+                </View>
+            </View>
+        )
+    }
+    renderLight() {
+        return (
+            <Block top center >
+                <Image
+                    source={require('../assets/images/bulb.png')}
+                    resizeMode="contain"
+                    style={{ width, height: height / 3, overflow: 'visible', marginTop: 20 }}
+                />
+                <Text h1 white center>Hvad synes du om lysniveauet?</Text>
+
+                <Slider
+                    minimumValue={0}
+                    maximumValue={5}
+                    step={1}
+                    style={{ height: 19, width: 300 }}
+                    thumbStyle={styles.thumb, { backgroundColor: theme.colors.primary }}
+                    trackStyle={{ height: 6, borderRadius: 6 }}
+                    minimumTrackTintColor={theme.colors.gray4}
+                    maximumTrackTintColor={theme.colors.secondary}
+                    value={this.state.light}
+                    onValueChange={value => this.setState({ light: value })}
+                    padding={theme.sizes.base}
+                />
+                <Block center middle row padding={theme.sizes.base} style={{ width: width, justifyContent: 'space-between' }}>
+                    <Text white>Ikke tilfreds</Text>
+                    <Text white >Meget tilfreds</Text></Block>
+
+            </Block>
+        )
     }
     render() {
         return (
             <Block>
                 {this.renderBackground()}
-                <Block middle center>
-                    <Ionicons name="md-pin" size={60} color={theme.colors.gray2} />
-                    <Text h1 gray2 center>Hvad synes du om lysniveauet?</Text>
-                </Block>
+
                 <Block bottom padding={theme.sizes.base}>
                     <Button gradient onPress={() => this.saveSettings()}>
-                        <Text bold white center>Save Settings</Text>
+                        <Text bold white center>Næste</Text>
                     </Button>
                 </Block>
             </Block>
@@ -39,7 +78,6 @@ const styles = StyleSheet.create({
         width: window.width,
         height: window.width * 1.5,
         overflow: 'hidden',
-        height: window.width / 1.5,
         marginBottom: 20,
     },
     background: {
@@ -57,15 +95,11 @@ const styles = StyleSheet.create({
         shadowRadius: 13,
         elevation: 5,
     },
-    cardImage: {
-        height: 75,
-        width: 75,
-    },
-    slider: {
+    content: {
         height: window.width / 1.5,
         width: window.width,
         position: 'absolute',
-        bottom: 0,
+        bottom: 200,
         marginLeft: window.width / 2,
 
     },
