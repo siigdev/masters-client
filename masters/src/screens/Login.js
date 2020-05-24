@@ -6,10 +6,10 @@ import firebase from 'firebase';
 
 export default class Login extends Component {
     state = {
-        showTerms: false,
         email: '',
         password: '',
-        isLoading: false
+        isLoading: false,
+        error: ''
     }
     _signInAsync = async () => {
         const { navigation } = this.props;
@@ -28,13 +28,12 @@ export default class Login extends Component {
                     this.setState({ isLoading: false });
                     switch (error.code) {
                         case 'auth/invalid-email':
-                            console.warn('Invalid mail')
+                            this.setState({ error: 'Invalid mail' })
                             break;
                     }
                 });
         } catch (error) {
             this.setState({ isLoading: false });
-            console.warn(error)
         }
     }
     render() {
@@ -42,42 +41,41 @@ export default class Login extends Component {
         const { isLoading } = this.state;
         return (
             <KeyboardAvoidingView
-            behavior={Platform.OS === "ios" ? "padding" : null}
-            style={{ flex: 1 }}
-        >
-            <SafeAreaView style={styles.container}>
-                <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-                <Block animation="zoomIn" duration={400} padding={[0, theme.sizes.base * 2]}>
+                style={{ flex: 1 }}
+            >
+                <SafeAreaView style={styles.container}>
+                    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+                        <Block animation="zoomIn" duration={400} padding={[0, theme.sizes.base * 2]}>
 
-                    {isLoading ?
-                        <Block middle><ActivityIndicator size={100} color={theme.colors.primary} /></Block> :
-                        <Block middle>
-                            <Input
-                                label="Email"
-                                style={[styles.input]}
-                                defaultValue={this.state.email}
-                                onChangeText={text => this.setState({ email: text })}
-                            />
-                            <Input
-                                secureTextEntry={true}
-                                label="Password"
-                                style={[styles.input]}
-                                defaultValue={this.state.password}
-                                onChangeText={text => this.setState({ password: text })}
-                            />
-                            <Button gradient onPress={() => this.loginHandler()}>
-                                <Text bold white center>Login</Text>
-                            </Button>
-                            <Button onPress={() => navigation.navigate('ForgotPassword')}>
-                                <Text gray caption center>
-                                    Forgot your password?
+                            {isLoading ?
+                                <Block middle><ActivityIndicator size={100} color={theme.colors.primary} /></Block> :
+                                <Block middle>
+                                    <Input
+                                        label="Email"
+                                        style={[styles.input]}
+                                        defaultValue={this.state.email}
+                                        onChangeText={text => this.setState({ email: text })}
+                                    />
+                                    <Input
+                                        secureTextEntry={true}
+                                        label="Password"
+                                        style={[styles.input]}
+                                        defaultValue={this.state.password}
+                                        onChangeText={text => this.setState({ password: text })}
+                                    />
+                                    <Button gradient onPress={() => this.loginHandler()}>
+                                        <Text bold white center>Login</Text>
+                                    </Button>
+                                    <Button onPress={() => navigation.navigate('ForgotPassword')}>
+                                        <Text gray caption center>
+                                            Forgot your password?
                             </Text>
-                            </Button>
+                                    </Button>
 
+                                </Block>
+                            }
                         </Block>
-                    }
-                </Block>
-                </TouchableWithoutFeedback>
+                    </TouchableWithoutFeedback>
                 </SafeAreaView>
             </KeyboardAvoidingView>
         )

@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import { Button, Block, Text, Card } from '../components';
-import { AsyncStorage, TouchableOpacity, Dimensions, Image, StyleSheet, ScrollView, Vibration, Platform  } from 'react-native';
+import { AsyncStorage, TouchableOpacity, Dimensions, Image, StyleSheet, View, ScrollView, Vibration, Platform } from 'react-native';
 import { theme } from '../constants';
 import firebase from 'firebase';
 import MapView, { Marker } from 'react-native-maps';
@@ -8,11 +8,13 @@ import { Ionicons } from '@expo/vector-icons';
 import { Notifications } from 'expo';
 import * as Permissions from 'expo-permissions';
 import Constants from 'expo-constants';
+import Modal from 'react-native-modal';
 
 const { width, height } = Dimensions.get('window');
 
 export default class Main extends Component {
     state = {
+        isModalVisible: false,
         room: {
             name: 'Ø22-603-0, Bygning 44',
             decibel: 0,
@@ -31,7 +33,9 @@ export default class Main extends Component {
         expoPushToken: '',
         notification: {},
     };
+    _showModal = () => this.setState({ isModalVisible: true })
 
+    _hideModal = () => this.setState({ isModalVisible: false })
     componentDidMount() {
         this.getNewRoom();
         this.registerForPushNotificationsAsync();
@@ -39,55 +43,59 @@ export default class Main extends Component {
     }
     registerForPushNotificationsAsync = async () => {
         if (Constants.isDevice) {
-          const { status: existingStatus } = await Permissions.getAsync(Permissions.NOTIFICATIONS);
-          let finalStatus = existingStatus;
-          if (existingStatus !== 'granted') {
-            const { status } = await Permissions.askAsync(Permissions.NOTIFICATIONS);
-            finalStatus = status;
-          }
-          if (finalStatus !== 'granted') {
-            alert('Failed to get push token for push notification!');
-            return;
-          }
-          token = await Notifications.getExpoPushTokenAsync();
-          this.setState({ expoPushToken: token });
+            const { status: existingStatus } = await Permissions.getAsync(Permissions.NOTIFICATIONS);
+            let finalStatus = existingStatus;
+            if (existingStatus !== 'granted') {
+                const { status } = await Permissions.askAsync(Permissions.NOTIFICATIONS);
+                finalStatus = status;
+            }
+            if (finalStatus !== 'granted') {
+                alert('Failed to get push token for push notification!');
+                return;
+            }
+            token = await Notifications.getExpoPushTokenAsync();
+            this.setState({ expoPushToken: token });
         } else {
-          alert('Must use physical device for Push Notifications');
+            alert('Must use physical device for Push Notifications');
         }
-    
-        if (Platform.OS === 'android') {
-          Notifications.createChannelAndroidAsync('default', {
-            name: 'default',
-            sound: true,
-            priority: 'max',
-            vibrate: [0, 250, 250, 250],
-          });
-        }
-      };
 
-      _handleNotification = notification => {
+        if (Platform.OS === 'android') {
+            Notifications.createChannelAndroidAsync('default', {
+                name: 'default',
+                sound: true,
+                priority: 'max',
+                vibrate: [0, 250, 250, 250],
+            });
+        }
+    };
+
+    _handleNotification = notification => {
         Vibration.vibrate();
         this.setState({ notification: notification });
-      };
-      sendPushNotification = async () => {
+    };
+    sendPushNotification = async () => {
         const message = {
-          to: this.state.expoPushToken,
-          sound: 'default',
-          title: 'Original Title',
-          body: 'And here is the body!',
-          data: { data: 'goes here' },
-          _displayInForeground: true,
+            to: this.state.expoPushToken,
+            sound: 'default',
+            title: ('Dit rum er: ', this.state.room.name),
+            body: `Rummet passer til dine præferencer: 
+👨‍👨‍👦‍👦 Under 10 personer, det ser ud til at falde snart 
+🎤 Lavt støjniveau, det ser ud til at forblive
+🌡 Lav temperatur, det ser ud til at stige snart
+☀️ Normal lysstyrke, det ser ud til at stige snart`,
+            data: { data: 'goes here' },
+            _displayInForeground: true,
         };
         const response = await fetch('https://exp.host/--/api/v2/push/send', {
-          method: 'POST',
-          headers: {
-            Accept: 'application/json',
-            'Accept-encoding': 'gzip, deflate',
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(message),
+            method: 'POST',
+            headers: {
+                Accept: 'application/json',
+                'Accept-encoding': 'gzip, deflate',
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(message),
         });
-      };
+    };
 
     _handleMapRegionChange = mapRegion => {
         this.setState({ mapRegion });
@@ -100,15 +108,15 @@ export default class Main extends Component {
             this.setState({
                 room: {
                     name: snapshot.val().name,
-                    decibel: snapshot.val().Decibel,
-                    lux: snapshot.val().Lux,
-                    occupants: snapshot.val().Occupants,
-                    temperature: snapshot.val().Temperature,
+                    decibel: snapshot.val().decibel,
+                    lux: snapshot.val().lux,
+                    occupants: snapshot.val().occupants,
+                    temperature: snapshot.val().temperature,
                     isBooked: snapshot.val().isBooked,
                     isTempBooked: snapshot.val().isTempBooked,
                 },
                 mapRegion: {
-                    latitude: snapshot.val().long,
+                    latitude: snapshot.val().longi,
                     longitude: snapshot.val().lat,
                     latitudeDelta: 0.0005,
                     longitudeDelta: 0.0005
@@ -163,13 +171,13 @@ export default class Main extends Component {
                     </Block>
                     <Block center>
                         <Text style={{ padding: theme.sizes.base / 2 }}><Ionicons name="md-mic" size={32} color="#E88615" /></Text>
-                        <Text caption gray2>Lydstyrke</Text>
-                        <Text h3>{room.lux}</Text>
+                        <Text caption gray2>Støjniveau</Text>
+                        <Text h3>{room.decibel}db</Text>
                     </Block>
                     <Block center>
                         <Text style={{ padding: theme.sizes.base / 2 }}><Ionicons name="md-sunny" size={32} color="#5E82B6" /></Text>
-                        <Text caption gray2>Støvniveau</Text>
-                        <Text h3>{room.decibel}db</Text>
+                        <Text caption gray2>Lysstyrke</Text>
+                        <Text h3>{room.lux}l</Text>
                     </Block>
                     <Block center>
                         <Text style={{ padding: theme.sizes.base / 2 }}><Ionicons name="md-people" size={32} color="#EF7575" /></Text>
@@ -194,36 +202,57 @@ export default class Main extends Component {
                     {this.renderRoomDetails()}
 
                 </Block>
-                <Button gradient title={'Press to Send Notification'} onPress={() => this.sendPushNotification()} />
+                <TouchableOpacity onPress={this._showModal}>
+                    <Text>Show Modal</Text>
+                </TouchableOpacity>
+                <Modal isVisible={this.state.isModalVisible} transparent={true}>
+                    <View style={{
+                        flex: 1,
+                        flexDirection: 'column',
+                        justifyContent: 'center',
+                        alignItems: 'center'
+                    }}>
+                        <View style={{
+                            width: 300,
+                            height: 300
+                        }}><Card><Text>HAHAHAHASHADHS</Text>
+                            <TouchableOpacity onPress={this._hideModal}>
+                                <Text>Hide Modal</Text>
+                            </TouchableOpacity>
+                            </Card>
+                        </View>
+                        </View>
+        </Modal>
+                    <Button gradient title={'Press to Send Notification'} onPress={() => this.sendPushNotification()} />
             </ScrollView>
         )
     }
 }
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
+                    container: {
+                    flex: 1,
         backgroundColor: '#fff',
         alignItems: 'center',
         justifyContent: 'center',
     },
     mapStyle: {
-        width: '100%',
+                    width: '100%',
         height: '100%',
     },
 });
 
 const mapStyle =
     [
-        {
-            "elementType": "labels",
+                {
+                    "elementType": "labels",
             "stylers": [
                 {
                     "visibility": "off"
                 }
             ]
         },
-        {
-            "featureType": "administrative",
+                {
+                    "featureType": "administrative",
             "elementType": "geometry",
             "stylers": [
                 {
@@ -231,32 +260,32 @@ const mapStyle =
                 }
             ]
         },
-        {
-            "featureType": "administrative.land_parcel",
+                {
+                    "featureType": "administrative.land_parcel",
             "stylers": [
                 {
                     "visibility": "off"
                 }
             ]
         },
-        {
-            "featureType": "administrative.neighborhood",
+                {
+                    "featureType": "administrative.neighborhood",
             "stylers": [
                 {
                     "visibility": "off"
                 }
             ]
         },
-        {
-            "featureType": "poi",
+                {
+                    "featureType": "poi",
             "stylers": [
                 {
                     "visibility": "off"
                 }
             ]
         },
-        {
-            "featureType": "road",
+                {
+                    "featureType": "road",
             "elementType": "labels.icon",
             "stylers": [
                 {
@@ -264,8 +293,8 @@ const mapStyle =
                 }
             ]
         },
-        {
-            "featureType": "transit",
+                {
+                    "featureType": "transit",
             "stylers": [
                 {
                     "visibility": "off"

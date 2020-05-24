@@ -189,13 +189,13 @@ export default class Settings extends Component {
                                             justifyContent: 'space-between',
                                             borderColor: theme.colors.primary
                                         }}>
-                                            <TouchableOpacity
+                                            <TouchableOpacity id={'Mand'}
                                                 style={[styles.button, styles.first, gender === 'Male' ? { backgroundColor: theme.colors.primary } : null]}
                                                 onPress={() => this.setState({ gender: 'Male' })}
                                             >
                                                 <Text style={[styles.buttonText, gender === 'Male' ? styles.activeText : null]}>Mand</Text>
                                             </TouchableOpacity>
-                                            <TouchableOpacity
+                                            <TouchableOpacity id={'Kvinde'}
                                                 style={[styles.button, styles.last, gender === 'Female' ? { backgroundColor: theme.colors.primary } : null]}
                                                 onPress={() => this.setState({ gender: 'Female' })}
                                             >

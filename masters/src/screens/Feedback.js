@@ -43,7 +43,7 @@ export default class Feedback extends Component {
                 {appConsumer => (
                     <View style={styles.container}>
                         <View style={styles.background} >
-                            <LinearGradient colors={[appConsumer.theme.colors.primary, appConsumer.theme.colors.secondary]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.linearGradient}>
+                            <LinearGradient colors={[theme.colors.primary, theme.colors.secondary]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.linearGradient}>
                                 <View style={styles.content}>
                                 </View>
                             </LinearGradient>
@@ -67,7 +67,7 @@ export default class Feedback extends Component {
                 {appConsumer => (
                     <View style={styles.container}>
                         <View style={styles.background} >
-                            <LinearGradient colors={[appConsumer.theme.colors.primary, appConsumer.theme.colors.secondary]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.linearGradient}>
+                            <LinearGradient colors={[theme.colors.primary, theme.colors.secondary]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.linearGradient}>
                                 <View style={styles.content}>
                                     <FlatList
                                         horizontal
@@ -93,10 +93,10 @@ export default class Feedback extends Component {
                                                     maximumValue={5}
                                                     step={1}
                                                     style={{ height: 19, width: 300 }}
-                                                    thumbStyle={styles.thumb, { backgroundColor: appConsumer.theme.colors.primary }}
+                                                    thumbStyle={styles.thumb, { backgroundColor: theme.colors.primary }}
                                                     trackStyle={{ height: 6, borderRadius: 6 }}
-                                                    minimumTrackTintColor={appConsumer.theme.colors.gray4}
-                                                    maximumTrackTintColor={appConsumer.theme.colors.secondary}
+                                                    minimumTrackTintColor={theme.colors.gray4}
+                                                    maximumTrackTintColor={theme.colors.secondary}
                                                     onValueChange={value => {
                                                         switch (this.state.feedback) {
                                                             case 1:
@@ -140,10 +140,10 @@ export default class Feedback extends Component {
 
                         <Block bottom padding={theme.sizes.base}>
                             {this.state.feedback > 3 ?
-                                <Button gradient onPress={() => { this.sendFeedback() }}>
+                                <Button id={'SendFeedback'} gradient onPress={() => { this.sendFeedback() }}>
                                     <Text bold white center>Send feedback</Text>
                                 </Button> :
-                                <Button gradient onPress={() => { this.scrollToItem() }}>
+                                <Button id={'NextFeedback'} gradient onPress={() => { this.scrollToItem() }}>
                                     <Text bold white center>Næste</Text>
                                 </Button>
                             }
