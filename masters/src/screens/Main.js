@@ -1,20 +1,29 @@
 import React, { Component } from 'react'
-import { Button, Block, Text, Card } from '../components';
-import { AsyncStorage, TouchableOpacity, Dimensions, Image, StyleSheet, View, ScrollView, Vibration, Platform } from 'react-native';
+import { Button, Block, Text, Card, Input } from '../components';
+import { AsyncStorage, TouchableOpacity, TouchableWithoutFeedback, Dimensions, Image, StyleSheet, View, ScrollView, Vibration, Platform } from 'react-native';
 import { theme } from '../constants';
 import firebase from 'firebase';
 import MapView, { Marker } from 'react-native-maps';
 import { Ionicons } from '@expo/vector-icons';
 import { Notifications } from 'expo';
 import * as Permissions from 'expo-permissions';
+import DateTimePicker from '@react-native-community/datetimepicker'
 import Constants from 'expo-constants';
 import Modal from 'react-native-modal';
+import Slider from 'react-native-slider'
 
 const { width, height } = Dimensions.get('window');
 
 export default class Main extends Component {
     state = {
         isModalVisible: false,
+        isParameterChosen: false,
+        isMapVisible: false,
+        selected: 'personer',
+        show: false,
+        showTo: false,
+        toTime: '12:00',
+        fromTime: '10:00',
         room: {
             name: 'Ø22-603-0, Bygning 44',
             decibel: 0,
@@ -36,6 +45,8 @@ export default class Main extends Component {
     _showModal = () => this.setState({ isModalVisible: true })
 
     _hideModal = () => this.setState({ isModalVisible: false })
+    _showMap = () => this.setState({ isMapVisible: true })
+    _hideMap = () => this.setState({ isMapVisible: false })
     componentDidMount() {
         this.getNewRoom();
         this.registerForPushNotificationsAsync();
@@ -102,6 +113,8 @@ export default class Main extends Component {
     };
 
     getNewRoom() {
+        this.setState({ isModalVisible: false })
+        this.setState({ isParameterChosen: false })
         const rooms = ["U-1", "U-2", "U-3", "U-4", "U-5"]
         let randomRoom = rooms[Math.floor(Math.random() * rooms.length)];
         firebase.database().ref('place/').child(randomRoom).on('value', snapshot => {
@@ -137,23 +150,27 @@ export default class Main extends Component {
                             <Text h1>{room.name}</Text>
                         </Block>
 
-                        <TouchableOpacity onPress={this.getNewRoom.bind(this)}>
+                        <TouchableOpacity onPress={this._showModal}>
                             <Text primary spacing={0.3} style={{ paddingTop: 10 }}>Ønsker du et andet rum?</Text>
                         </TouchableOpacity>
                     </Block>
 
                     <Block flex={1}>
-                        <MapView
-                            region={this.state.mapRegion}
-                            customMapStyle={mapStyle}
-                            onRegionChange={this._handleMapRegionChange} style={styles.mapStyle}
-                        >
-                            <Marker
-                                coordinate={this.state.mapRegion}
-                            />
-                        </MapView>
+
+                        <TouchableWithoutFeedback onPress={this._showMap}>
+                            <MapView
+                                region={this.state.mapRegion}
+                                customMapStyle={mapStyle}
+                                onRegionChange={this._handleMapRegionChange} style={styles.mapStyle}
+                            >
+                                <Marker
+                                    coordinate={this.state.mapRegion}
+                                />
+                            </MapView>
+                        </TouchableWithoutFeedback>
                     </Block>
                 </Block>
+
             </Card>
         )
     }
@@ -188,8 +205,49 @@ export default class Main extends Component {
             </Card>
         )
     }
+    giveFeedback(param) {
+        this.setState({ isParameterChosen: true });
+        this.setState({ selected: param });
+        console.log(param)
+    }
+    show = mode => {
+        this.setState({
+            show: true,
+        });
+    }
+    showTo = mode => {
+        this.setState({
+            showTo: true,
+        });
+    }
+    timepicker = () => {
+        this.show('time');
+    }
+    timepickerTo = () => {
+        this.showTo('time');
+    }
+
+    setToTime = (event, date) => {
+        date = date || this.state.toTime;
+        let str = date.toLocaleTimeString();
+        let slicedStr = str.slice(0, -3);
+        this.setState({
+            showTo: false,
+            toTime: slicedStr,
+        });
+    }
+    setFromTime = (event, date) => {
+        date = date || this.state.fromTime;
+        let str = date.toLocaleTimeString();
+        let slicedStr = str.slice(0, -3);
+        this.setState({
+            show: false,
+            fromTime: slicedStr,
+        });
+    }
     render() {
         const { navigation } = this.props;
+        const { isParameterChosen, show, showTo, toTime, fromTime } = this.state;
         return (
             <ScrollView style={{ backgroundColor: theme.colors.gray4, padding: 0 }}>
                 <Image
@@ -199,12 +257,75 @@ export default class Main extends Component {
                 />
                 <Block style={{ padding: theme.sizes.base, marginTop: -75 }}>
                     {this.renderRoom()}
+
                     {this.renderRoomDetails()}
 
+                    <Card shadow>
+                        <Text spacing={0.7} style={{paddingBottom: theme.sizes.base}}>Booking</Text>
+                        <Text caption gray2>Fra</Text>
+                        <Button style={{
+                            marginBottom: 5, padding: theme.sizes.base, borderWidth: 1}} onPress={this.timepicker}><Text>{fromTime}</Text></Button>
+                        {show && <Block><DateTimePicker value={new Date()}
+                            mode={'time'}
+                            is24Hour={true}
+                            display="clock"
+                            onChange={this.setFromTime} />
+                            <DateTimePicker value={new Date()}
+                                mode={'time'}
+                                is24Hour={true}
+                                display="clock"
+                                onChange={this.setFromTime} />
+                        </Block>}
+                        <Text caption gray2>Til</Text>
+                        <Button style={{ marginBottom: 5, padding: theme.sizes.base, borderWidth: 1}} onPress={this.timepickerTo}><Text>{toTime}</Text></Button>
+                        {showTo && <Block><DateTimePicker value={new Date()}
+                            mode={'time'}
+                            is24Hour={true}
+                            display="clock"
+                            onChange={this.setToTime} />
+                            <DateTimePicker value={new Date()}
+                                mode={'time'}
+                                is24Hour={true}
+                                display="clock"
+                                onChange={this.setToTime} />
+                        </Block>}
+                        <Button gradient><Text white bold center>Book dette rum nu</Text></Button>
+                    </Card>
+
                 </Block>
-                <TouchableOpacity onPress={this._showModal}>
-                    <Text>Show Modal</Text>
-                </TouchableOpacity>
+                <Modal isVisible={this.state.isMapVisible} transparent={true}>
+                    <View style={{
+                        flex: 1,
+                        flexDirection: 'column',
+                        justifyContent: 'center',
+                        alignItems: 'center'
+                    }}>
+                        <View style={{
+                            width: 300,
+                            height: 300
+                        }}>
+                            <Card >
+                                <TouchableOpacity onPress={this._hideMap}>
+                                    <Text gray2 right style={{ paddingBottom: theme.sizes.base }}>X</Text>
+                                </TouchableOpacity>
+
+                                <Block flex={1}>
+                                    <MapView
+                                        region={this.state.mapRegion}
+                                        customMapStyle={mapStyle}
+                                        onRegionChange={this._handleMapRegionChange} style={styles.mapStyle}
+                                    >
+                                        <Marker
+                                            coordinate={this.state.mapRegion}
+                                        />
+                                    </MapView>
+                                </Block>
+                            </Card>
+                        </View>
+                    </View>
+                </Modal>
+
+
                 <Modal isVisible={this.state.isModalVisible} transparent={true}>
                     <View style={{
                         flex: 1,
@@ -215,44 +336,89 @@ export default class Main extends Component {
                         <View style={{
                             width: 300,
                             height: 300
-                        }}><Card><Text>HAHAHAHASHADHS</Text>
-                            <TouchableOpacity onPress={this._hideModal}>
-                                <Text>Hide Modal</Text>
-                            </TouchableOpacity>
+                        }}><Card >
+                                <TouchableOpacity onPress={this._hideModal}>
+                                    <Text gray2 right style={{ paddingBottom: theme.sizes.base }}>X</Text>
+                                </TouchableOpacity>
+                                {isParameterChosen ?
+
+                                    <Block center>
+                                        <Text h2 style={{ paddingBottom: theme.sizes.base * 4 }}>Du vurderer: {this.state.selected}</Text>
+
+                                        <Slider
+                                            minimumValue={0}
+                                            maximumValue={5}
+                                            step={1}
+                                            style={{ height: 19, width: 230 }}
+                                            thumbStyle={styles.thumb, { backgroundColor: theme.colors.primary }}
+                                            trackStyle={{ height: 6, borderRadius: 6 }}
+                                            minimumTrackTintColor={theme.colors.secondary}
+                                            maximumTrackTintColor={theme.colors.gray4}
+                                        />
+                                        <Block row style={{ width: 230, justifyContent: 'space-between' }}>
+                                            <Text>Ikke tilfreds</Text>
+                                            <Text>Meget tilfreds</Text>
+                                        </Block>
+                                        <Button style={{ width: 230 }} gradient onPress={this.getNewRoom.bind(this)}><Text bold white center>Få nyt rum</Text></Button>
+                                    </Block> :
+                                    <Block>
+                                        <Text h2>Hvad skal være anderledes?</Text>
+                                        <Block row>
+                                            <Block center><Button onPress={this.giveFeedback.bind(this, 'Temperatur')}>
+                                                <Text center style={{ padding: theme.sizes.base / 2 }}><Ionicons name="md-thermometer" size={52} color="#D3E2B0" /></Text>
+                                                <Text center caption gray2>Temperatur</Text></Button>
+                                            </Block>
+                                            <Block center><Button onPress={this.giveFeedback.bind(this, 'Støjniveau')}>
+                                                <Text style={{ padding: theme.sizes.base / 2 }}><Ionicons name="md-mic" size={52} color="#E88615" /></Text>
+                                                <Text center caption gray2>Støjniveau</Text></Button>
+                                            </Block>
+                                        </Block>
+                                        <Block row>
+                                            <Block center><Button onPress={this.giveFeedback.bind(this, 'Lysstyrke')}>
+                                                <Text center style={{ padding: theme.sizes.base / 2 }}><Ionicons name="md-sunny" size={52} color="#5E82B6" /></Text>
+                                                <Text caption gray2>Lysstyrke</Text></Button>
+                                            </Block>
+                                            <Block center><Button onPress={this.giveFeedback.bind(this, 'Personer')}>
+                                                <Text center style={{ padding: theme.sizes.base / 2 }}><Ionicons name="md-people" size={52} color="#EF7575" /></Text>
+                                                <Text center caption gray2>Personer</Text></Button>
+                                            </Block>
+                                        </Block>
+
+                                    </Block>}
                             </Card>
                         </View>
-                        </View>
-        </Modal>
-                    <Button gradient title={'Press to Send Notification'} onPress={() => this.sendPushNotification()} />
+                    </View>
+                </Modal>
+                <Button gradient title={'Press to Send Notification'} onPress={() => this.sendPushNotification()} />
             </ScrollView>
         )
     }
 }
 const styles = StyleSheet.create({
-                    container: {
-                    flex: 1,
+    container: {
+        flex: 1,
         backgroundColor: '#fff',
         alignItems: 'center',
         justifyContent: 'center',
     },
     mapStyle: {
-                    width: '100%',
+        width: '100%',
         height: '100%',
     },
 });
 
 const mapStyle =
     [
-                {
-                    "elementType": "labels",
+        {
+            "elementType": "labels",
             "stylers": [
                 {
                     "visibility": "off"
                 }
             ]
         },
-                {
-                    "featureType": "administrative",
+        {
+            "featureType": "administrative",
             "elementType": "geometry",
             "stylers": [
                 {
@@ -260,32 +426,32 @@ const mapStyle =
                 }
             ]
         },
-                {
-                    "featureType": "administrative.land_parcel",
+        {
+            "featureType": "administrative.land_parcel",
             "stylers": [
                 {
                     "visibility": "off"
                 }
             ]
         },
-                {
-                    "featureType": "administrative.neighborhood",
+        {
+            "featureType": "administrative.neighborhood",
             "stylers": [
                 {
                     "visibility": "off"
                 }
             ]
         },
-                {
-                    "featureType": "poi",
+        {
+            "featureType": "poi",
             "stylers": [
                 {
                     "visibility": "off"
                 }
             ]
         },
-                {
-                    "featureType": "road",
+        {
+            "featureType": "road",
             "elementType": "labels.icon",
             "stylers": [
                 {
@@ -293,8 +459,8 @@ const mapStyle =
                 }
             ]
         },
-                {
-                    "featureType": "transit",
+        {
+            "featureType": "transit",
             "stylers": [
                 {
                     "visibility": "off"

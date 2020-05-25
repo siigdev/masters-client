@@ -167,17 +167,17 @@ export default class Settings extends Component {
                                         <Block row space="between" margin={[10, 0]} style={styles.inputRow}>
                                             <Block>
                                                 <Text gray2 style={{ marginBottom: 5 }}>Fødselsdato</Text>
-                                                {show && <DateTimePicker value={this.state.birthday}
+                                                {show && <DateTimePicker value={new Date()}
                                                     mode={'date'}
                                                     is24Hour={true}
                                                     display="default"
                                                     onChange={this.setDate} />
                                                 }
-                                                <TouchableOpacity onPress={this.timepicker}>
+                                                <TouchableOpacity onPress={this.datepicker}>
                                                     <Text style={{ marginBottom: theme.sizes.base }}>{this.getDate()}</Text>
                                                 </TouchableOpacity>
                                             </Block>
-                                            <Text medium primary style={{ marginBottom: 15 }} onPress={this.timepicker}>
+                                            <Text medium primary style={{ marginBottom: 15 }} onPress={this.datepicker}>
                                                 {'Rediger'}
                                             </Text>
                                         </Block>
