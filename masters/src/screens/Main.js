@@ -11,6 +11,7 @@ import DateTimePicker from '@react-native-community/datetimepicker'
 import Constants from 'expo-constants';
 import Modal from 'react-native-modal';
 import Slider from 'react-native-slider'
+import * as Battery from 'expo-battery';
 
 const { width, height } = Dimensions.get('window');
 
@@ -24,6 +25,7 @@ export default class Main extends Component {
         showTo: false,
         toTime: '12:00',
         fromTime: '10:00',
+        battery: true,
         room: {
             name: 'Ø22-603-0, Bygning 44',
             decibel: 0,
@@ -36,8 +38,8 @@ export default class Main extends Component {
         mapRegion: {
             latitude: 55.366910,
             longitude: 10.430083,
-            latitudeDelta: 0.0005,
-            longitudeDelta: 0.0005
+            latitudeDelta: 0.005,
+            longitudeDelta: 0.005
         },
         expoPushToken: '',
         notification: {},
@@ -49,8 +51,26 @@ export default class Main extends Component {
     _hideMap = () => this.setState({ isMapVisible: false })
     componentDidMount() {
         this.getNewRoom();
+        this._subscribe();
         this.registerForPushNotificationsAsync();
         this._notificationSubscription = Notifications.addListener(this._handleNotification);
+    }
+    componentWillUnmount() {
+        this._unsubscribe();
+    }
+    async _subscribe() {
+        const batteryLevel = await Battery.getBatteryLevelAsync();
+        this.setState({ batteryLevel });
+        this._subscription = Battery.addBatteryLevelListener(({ batteryLevel }) => {
+            if (batteryLevel <= 10) {
+                this.setState({ battery: false });
+            }
+        });
+    }
+
+    _unsubscribe() {
+        this._subscription && this._subscription.remove();
+        this._subscription = null;
     }
     registerForPushNotificationsAsync = async () => {
         if (Constants.isDevice) {
@@ -261,10 +281,11 @@ export default class Main extends Component {
                     {this.renderRoomDetails()}
 
                     <Card shadow>
-                        <Text spacing={0.7} style={{paddingBottom: theme.sizes.base}}>Booking</Text>
+                        <Text spacing={0.7} style={{ paddingBottom: theme.sizes.base }}>Booking</Text>
                         <Text caption gray2>Fra</Text>
                         <Button style={{
-                            marginBottom: 5, padding: theme.sizes.base, borderWidth: 1}} onPress={this.timepicker}><Text>{fromTime}</Text></Button>
+                            marginBottom: 5, padding: theme.sizes.base, borderWidth: 1
+                        }} onPress={this.timepicker}><Text>{fromTime}</Text></Button>
                         {show && <Block><DateTimePicker value={new Date()}
                             mode={'time'}
                             is24Hour={true}
@@ -277,7 +298,7 @@ export default class Main extends Component {
                                 onChange={this.setFromTime} />
                         </Block>}
                         <Text caption gray2>Til</Text>
-                        <Button style={{ marginBottom: 5, padding: theme.sizes.base, borderWidth: 1}} onPress={this.timepickerTo}><Text>{toTime}</Text></Button>
+                        <Button style={{ marginBottom: 5, padding: theme.sizes.base, borderWidth: 1 }} onPress={this.timepickerTo}><Text>{toTime}</Text></Button>
                         {showTo && <Block><DateTimePicker value={new Date()}
                             mode={'time'}
                             is24Hour={true}
@@ -312,8 +333,7 @@ export default class Main extends Component {
                                 <Block flex={1}>
                                     <MapView
                                         region={this.state.mapRegion}
-                                        customMapStyle={mapStyle}
-                                        onRegionChange={this._handleMapRegionChange} style={styles.mapStyle}
+                                        customMapStyle={mapStyle} style={styles.mapStyle}
                                     >
                                         <Marker
                                             coordinate={this.state.mapRegion}
@@ -356,13 +376,13 @@ export default class Main extends Component {
                                             maximumTrackTintColor={theme.colors.gray4}
                                         />
                                         <Block row style={{ width: 230, justifyContent: 'space-between' }}>
-                                            <Text>Ikke tilfreds</Text>
-                                            <Text>Meget tilfreds</Text>
+                                            <Text>Lavere</Text>
+                                            <Text>Højere</Text>
                                         </Block>
                                         <Button style={{ width: 230 }} gradient onPress={this.getNewRoom.bind(this)}><Text bold white center>Få nyt rum</Text></Button>
                                     </Block> :
                                     <Block>
-                                        <Text h2>Hvad skal være anderledes?</Text>
+                                        <Text h2 style={{ paddingBottom: theme.sizes.base }}>Hvad skal være anderledes?</Text>
                                         <Block row>
                                             <Block center><Button onPress={this.giveFeedback.bind(this, 'Temperatur')}>
                                                 <Text center style={{ padding: theme.sizes.base / 2 }}><Ionicons name="md-thermometer" size={52} color="#D3E2B0" /></Text>

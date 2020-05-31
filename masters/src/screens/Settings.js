@@ -28,7 +28,7 @@ export default class Settings extends Component {
             try {
                 this.setState({
                     gender: snapshot.val().gender,
-                    organization: snapshot.val().organization,
+                    organisation: snapshot.val().organisation,
                     name: snapshot.val().name,
                     birthday: new Date(snapshot.val().birthday),
                     email: email,
@@ -123,7 +123,7 @@ export default class Settings extends Component {
     }
 
     render() {
-        const { isLoading, organization, editing, gender, email, show } = this.state;
+        const { isLoading, organisation, editing, gender, email, show } = this.state;
         return (
             <Block style={{
                 flex: 1,
@@ -143,7 +143,7 @@ export default class Settings extends Component {
                                         <Block row space="between" margin={[10, 0]} style={styles.inputRow}>
                                             <Block>
                                                 <Text gray2 style={{ marginBottom: 5 }}>Organisation</Text>
-                                                <Text>{organization}</Text>
+                                                <Text>{organisation}</Text>
                                             </Block>
                                         </Block>
 
@@ -207,14 +207,14 @@ export default class Settings extends Component {
                                     <Text style={{ marginBottom: 10, marginTop: 10 }}>KONTO</Text>
                                     <Card shadow>
                                         <Block row center space="between" style={{ marginBottom: theme.sizes.base }}>
-                                            <Text gray2>Nyhedsbrev</Text>
+                                            <Text gray2>Notifikationer</Text>
                                             <Switch
                                                 value={this.state.newsletter}
                                                 onValueChange={value => this.setState({ newsletter: value })}
                                             />
                                         </Block>
                                         <Block row center space="between" style={{ marginBottom: theme.sizes.base }}>
-                                            <Text gray2>Notifikationer</Text>
+                                            <Text gray2>Nyhedsbrev</Text>
                                             <Switch
                                                 value={this.state.notifications}
                                                 onValueChange={value => this.setState({ notifications: value })}

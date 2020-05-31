@@ -9,7 +9,8 @@ const { width, height } = Dimensions.get('window');
 export default class Signup extends Component {
     state = {
         showTerms: false,
-        isLoading: false
+        isLoading: false,
+        organisation: ''
     }
 
     _signInAsync = async () => {
@@ -20,6 +21,8 @@ export default class Signup extends Component {
         firebase.database().ref('users/').child(currUser).set({
             name: '',
             gender: 'Male',
+            birthday: new Date('2000-01-01T00:00:00'),
+            organisation: this.state.organisation,
             notifications: true,
             newsletter: false,
             email: email,
@@ -49,35 +52,42 @@ export default class Signup extends Component {
         const { isLoading } = this.state;
         return (
             <KeyboardAvoidingView
-            behavior={Platform.OS === "ios" ? "padding" : null}
-            style={{ flex: 1 }}
-        >
-            <SafeAreaView style={styles.container}>
-                <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-                <Block animation="zoomIn" duration={400} style={styles.inner} padding={[0, theme.sizes.base * 2]}>
-                    {isLoading ?
-                        <Block middle><ActivityIndicator size={100} color={theme.colors.primary} /></Block> :
-                        <Block middle>
-                            <Input
-                                label={"Email "}
-                                style={[styles.input]}
-                                defaultValue={this.state.email}
-                                onChangeText={(text) => this.setState({ email: text })}
-                            />
-                            <Input
-                                secureTextEntry={true}
-                                label={"Password "}
-                                style={[styles.input]}
-                                defaultValue={this.state.password}
-                                onChangeText={text => this.setState({ password: text })}
-                            />
-                            <Button gradient onPress={() => this.signupHandler()}>
-                                    <Text bold white center>Sign up</Text>
-                            </Button>
+                behavior={Platform.OS === "ios" ? "padding" : null}
+                style={{ flex: 1 }}
+            >
+                <SafeAreaView style={styles.container}>
+                    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+                        <Block animation="zoomIn" duration={400} style={styles.inner} padding={[0, theme.sizes.base * 2]}>
+                            {isLoading ?
+                                <Block middle><ActivityIndicator size={100} color={theme.colors.primary} /></Block> :
+                                <Block middle>
+
+                                    <Input
+                                        label={"Organisation "}
+                                        style={[styles.input]}
+                                        defaultValue={this.state.organisation}
+                                        onChangeText={(text) => this.setState({ organisation: text })}
+                                    />
+                                    <Input
+                                        label={"Email "}
+                                        style={[styles.input]}
+                                        defaultValue={this.state.email}
+                                        onChangeText={(text) => this.setState({ email: text })}
+                                    />
+                                    <Input
+                                        secureTextEntry={true}
+                                        label={"Kodeord "}
+                                        style={[styles.input]}
+                                        defaultValue={this.state.password}
+                                        onChangeText={text => this.setState({ password: text })}
+                                    />
+                                    <Button gradient onPress={() => this.signupHandler()}>
+                                        <Text bold white center>Sign up</Text>
+                                    </Button>
+                                </Block>
+                            }
                         </Block>
-                    }
-                </Block>
-                </TouchableWithoutFeedback>
+                    </TouchableWithoutFeedback>
                 </SafeAreaView>
             </KeyboardAvoidingView>
         )

@@ -21,6 +21,9 @@ const authLoadingScreen = createStackNavigator({
 const authScreens = createStackNavigator({
     Welcome: {
         screen: Welcome,
+        navigationOptions: {
+            header: null,
+        }
     },
     Login: {
         screen: Login,
@@ -39,7 +42,7 @@ const authScreens = createStackNavigator({
         navigationOptions: {
             headerTitle: "Forgot Password",
         }
-    }
+    },
 })
 const screens = createBottomTabNavigator({
     Main: {

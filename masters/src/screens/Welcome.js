@@ -42,14 +42,18 @@ export default class Welcome extends Component {
       }
     renderAppIllustrations() {
         return (
-            <Text>Coming soon</Text>
+          <Image
+          source={require('../assets/images/map.png')}
+          resizeMode="contain"
+          style={{ width, height: height / 3, overflow: 'visible', marginTop: 20 }}
+      />
         )
     }
     render() {
         const { navigation } = this.props;
         return (
-            <Block>
-                <Text h1 center>Welcome</Text>
+            <Block style={{backgroundColor: theme.colors.white}}>
+                <Text h1 center color={theme.colors.primary} style={{marginTop: 50}}>Place Master's Project</Text>
                 <Block center middle>
                     {this.renderAppIllustrations()}
                 </Block>
